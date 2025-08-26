@@ -1,24 +1,25 @@
-name: Deploy HTML to GitHub Pages
+name: GitHub Pages Deploy
 
 on:
   push:
     branches:
       - main
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 拉取仓库代码
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@7a2f9f2f3d7c0f5f1b27e3c1c57eb7e0d05f2d6b
+      # 上传根目录文件到 GitHub Pages
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./          # 发布整个仓库根目录
+          path: ./   # 发布整个仓库根目录
+
+      # 官方部署
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
