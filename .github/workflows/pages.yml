@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v5
+        uses: peaceiris/actions-gh-pages@7a2f9f2f3d7c0f5f1b27e3c1c57eb7e0d05f2d6b
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./          # 发布整个仓库根目录
