@@ -86,10 +86,21 @@
     a { color:#00eaff; text-decoration:none; font-weight:bold; transition: all 0.3s ease; }
     a:hover { color:#ff6a00; text-shadow:0 0 8px #ff6a00,0 0 12px #ffeb3b; transform:scale(1.05); }
 
+    /* CTA按钮 */
     .cta-btn { display:inline-block; padding:15px 25px; margin-top:20px; border-radius:50px; font-size:1.2rem;
-      text-transform:uppercase; letter-spacing:1px; background: linear-gradient(90deg,#ff6a00,#ee0979);
-      box-shadow:0 0 15px rgba(255,106,0,0.7); transition: all 0.3s ease; }
-    .cta-btn:hover { background:linear-gradient(90deg,#ee0979,#ff6a00); box-shadow:0 0 30px rgba(255,0,255,1),0 0 50px rgba(0,255,255,0.8); transform:scale(1.1); }
+      text-transform:uppercase; letter-spacing:1px; font-weight:bold;
+      color:#fff !important; 
+      background: linear-gradient(90deg,#ff6a00,#ee0979);
+      box-shadow:0 0 15px rgba(255,106,0,0.7);
+      transition: all 0.3s ease; text-shadow:0 0 5px #fff,0 0 10px #ffeb3b;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-btn:hover { background: linear-gradient(90deg,#ee0979,#ff6a00);
+      box-shadow:0 0 30px rgba(255,0,255,1),0 0 50px rgba(0,255,255,0.8); transform:scale(1.1);
+      color:#fff !important;
+    }
+    .cta-btn:active { transform: scale(1.05); box-shadow: 0 0 50px rgba(255,255,255,0.9), 0 0 100px rgba(255,0,255,0.8); }
 
     ul { list-style:none; padding:0; }
     ul li { margin:12px 0; padding:12px; background:rgba(255,255,255,0.08); border-radius:8px; transition: all 0.3s ease; }
@@ -117,7 +128,7 @@
     <section>
       <h2>📑 Download Full Reports</h2>
       <p>Access the complete MindStash collection and uncover hidden legal income streams:  
-        <a href="https://payhip.com/MindStash" target="_blank" rel="nofollow sponsored" class="cta-btn glow-text" title="Download MindStash full report collection for class action strategies">🚀 Download Leaked Reports & Profit Strategies</a>
+        <a href="https://payhip.com/MindStash" target="_blank" rel="nofollow sponsored" class="cta-btn" title="Download MindStash full report collection for class action strategies">🚀 Download Leaked Reports & Profit Strategies</a>
       </p>
     </section>
 
@@ -128,4 +139,71 @@
         <li><a href="https://example.com/millie-bobby-brown-lawsuits" target="_blank" rel="nofollow" title="Hollywood lawsuits with Millie Bobby Brown">🎬 Millie Bobby Brown & Hollywood lawsuits</a></li>
         <li><a href="https://example.com/lil-nas-x-music-rights" target="_blank" rel="nofollow" title="Lil Nas X music rights controversies">🎵 Lil Nas X controversy and music rights</a></li>
         <li><a href="https://example.com/us-open-serena-lawsuits" target="_blank" rel="nofollow" title="US Open lawsuits and Serena Williams legacy battles">🎾 US Open & Serena Williams legacy battles</a></li>
-        <li><a href="https://example.com/crypto-draftkings-lawsuits"
+        <li><a href="https://example.com/crypto-draftkings-lawsuits" target="_blank" rel="nofollow" title="Crypto and DraftKings betting disputes">💰 Crypto lawsuits & DraftKings betting disputes</a></li>
+        <li><a href="https://example.com/starbucks-pumpkin-spice-2025" target="_blank" rel="nofollow" title="Starbucks Pumpkin Spice 2025 trademark hype">☕ Starbucks Pumpkin Spice 2025 trademark hype</a></li>
+      </ul>
+      <p>We tie <strong>global trending events</strong> with lawsuit profit models for <em>maximum relevance and SEO impact</em>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 MindStash | Justice-for-Profit Analysis</p>
+  </footer>
+
+  <script>
+    // tsparticles背景
+    tsParticles.load("tsparticles", {
+      fpsLimit: 60,
+      background: { color: "#0f0f1a" },
+      particles: {
+        number: { value: 80, density: { enable: true, area: 800 } },
+        color: { value: ["#00f0ff","#ff00ff","#ff6a00"] },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, random: true },
+        size: { value: 2, random: true },
+        move: { enable: true, speed: 1, direction: "none", outModes: "bounce" },
+        links: { enable: true, distance: 150, color: "#00f0ff", opacity: 0.3, width: 1 }
+      },
+      interactivity: {
+        events: { onHover: { enable: true, mode: "repulse" } },
+        modes: { repulse: { distance: 100, duration: 0.4 } }
+      },
+      detectRetina: true
+    });
+
+    // CTA按钮点击粒子效果
+    document.querySelectorAll('.cta-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        const clickX = e.clientX;
+        const clickY = e.clientY;
+
+        for(let i=0;i<15;i++){
+          const particle = document.createElement('div');
+          particle.style.position='absolute';
+          particle.style.left=`${clickX}px`;
+          particle.style.top=`${clickY}px`;
+          particle.style.width='8px';
+          particle.style.height='8px';
+          particle.style.borderRadius='50%';
+          particle.style.background='radial-gradient(circle,#ff00ff,#00ffff)';
+          particle.style.pointerEvents='none';
+          particle.style.zIndex='9999';
+          particle.style.opacity='1';
+          document.body.appendChild(particle);
+
+          const dx=(Math.random()-0.5)*60;
+          const dy=(Math.random()-0.5)*60;
+          let opacity=1;
+          let anim=setInterval(()=>{
+            particle.style.transform=`translate(${dx}px,${dy}px)`;
+            opacity-=0.05;
+            particle.style.opacity=opacity;
+            if(opacity<=0){ particle.remove(); clearInterval(anim);}
+          },30);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
