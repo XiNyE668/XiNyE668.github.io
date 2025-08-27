@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindStash Tools | Rare, Useful & Digital Chaos</title>
+<meta name="description" content="MindStash Tools — Image Compress, JSON Parser, Base64, MD5, URL Encode/Decode, UUID, JWT, Crontab, Color Picker, Timestamp Converter, Code to Image.">
+<meta name="keywords" content="tools, image compress, json parser, base64, md5, uuid, jwt, crontab, color picker, timestamp, code to image">
+
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'GA_MEASUREMENT_ID');
+</script>
+
+<!-- tsparticles for background -->
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-md5@0.7.3/build/md5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/uuid@9.0.0/dist/umd/uuid.min.js"></script>
+
+<style>
+html, body { margin:0; padding:0; height:100%; font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; overflow-x:hidden; scroll-behavior:smooth;}
+#tsparticles { position:fixed; width:100%; height:100%; z-index:-1; top:0; left:0; }
+
+/* 顶部导航 */
+nav { position:fixed; top:0; width:100%; background: rgba(0,0,0,0.6); z-index:999; display:flex; justify-content:center; padding:10px 0; backdrop-filter: blur(8px);}
+nav a { margin:0 15px; color:#00eaff; text-decoration:none; font-weight:bold; transition:0.3s; }
+nav a:hover { color:#ff6a00; text-shadow:0 0 8px #ff6a00,0 0 12px #ffeb3b; transform:scale(1.05); }
+
+header { text-align:center; padding:100px 20px 50px 20px; }
+header h1 { font-size:2.5rem; font-weight:900; text-transform:uppercase; background: linear-gradient(90deg, #ff00ff, #00ffff, #ff6a00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation: flow 3s linear infinite; text-shadow:0 0 5px #ff00ff,0 0 10px #00ffff,0 0 20px #ff6a00; }
+@keyframes flow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+main { max-width:1000px; margin:20px auto; padding:0 20px; }
+section { padding:30px 20px; margin:20px 0; background: rgba(255,255,255,0.05); border-radius:12px; box-shadow:0 0 25px rgba(0,255,255,0.4); transition: all 0.3s ease;}
+section:hover { box-shadow:0 0 40px rgba(255,0,255,0.5); }
+
+h2 { font-size:1.8rem; margin-bottom:15px; color:#ffeb3b; }
+input, textarea, button { width:100%; padding:10px; margin:5px 0; border-radius:6px; border:none; }
+button { background: linear-gradient(90deg,#ff6a00,#ee0979); color:#fff; font-weight:bold; cursor:pointer; transition:0.3s; }
+button:hover { background: linear-gradient(90deg,#ee0979,#ff6a00); transform:scale(1.05); box-shadow:0 0 20px rgba(255,0,255,0.7); }
+
+pre { background:rgba(0,0,0,0.5); padding:10px; border-radius:6px; overflow-x:auto; }
+canvas { display:block; margin:10px 0; border:1px solid #fff; border-radius:6px; }
+
+footer { text-align:center; padding:20px; font-size:0.9rem; background: rgba(0,0,0,0.7); margin-top:40px; }
+
+.ad-placeholder { text-align:center; border:1px dashed #aaa; padding:10px; margin:20px 0; color:#fff; }
+</style>
+</head>
+<body>
+<div id="tsparticles"></div>
+
+<nav>
+  <a href="#image-compress">Image</a>
+  <a href="#json-parser">JSON</a>
+  <a href="#base64">Base64</a>
+  <a href="#md5">MD5</a>
+  <a href="#url">URL</a>
+  <a href="#uuid">UUID</a>
+  <a href="#jwt">JWT</a>
+  <a href="#crontab">Crontab</a>
+  <a href="#color">Color</a>
+  <a href="#timestamp">Timestamp</a>
+  <a href="#code2img">Code2Image</a>
+</nav>
+
+<header>
+  <h1 class="glow-text">⚡ MindStash Tools ⚡</h1>
+  <p>Rare, Useful & Digital Chaos — All-in-One Frontend Tools</p>
+</header>
+
+<main>
+<div class="ad-placeholder">Your Ad Here</div>
+
+<!-- Image Compress -->
+<section id="image-compress">
+<h2>🖼️ Image Compress</h2>
+<input type="file" id="imageInput" multiple accept="image/png, image/jpeg">
+<button onclick="compressImages()">Compress Images</button>
+<div id="imageResult"></div>
+</section>
+
+<!-- JSON Parser -->
+<section id="json-parser">
+<h2>📝 JSON Parser</h2>
+<textarea id="jsonInput" placeholder="Paste JSON here" rows="5"></textarea>
+<button onclick="parseJSON()">Parse JSON</button>
+<pre id="jsonResult"></pre>
+</section>
+
+<!-- Base64 -->
+<section id="base64">
+<h2>🔐 Base64 Encode/Decode</h2>
+<input type="text" id="base64Input" placeholder="Enter text">
+<button onclick="encodeBase64()">Encode</button>
+<button onclick="decodeBase64()">Decode</button>
+<pre id="base64Result"></pre>
+</section>
+
+<!-- MD5 -->
+<section id="md5">
+<h2>🔑 MD5 Hash</h2>
+<input type="text" id="md5Input" placeholder="Enter text">
+<button onclick="generateMD5()">Generate MD5</button>
+<pre id="md5Result"></pre>
+</section>
+
+<!-- URL -->
+<section id="url">
+<h2>🌐 URL Encode/Decode</h2>
+<input type="text" id="urlInput" placeholder="Enter URL or text">
+<button onclick="encodeURL()">Encode</button>
+<button onclick="decodeURL()">Decode</button>
+<pre id="urlResult"></pre>
+</section>
+
+<!-- UUID -->
+<section id="uuid">
+<h2>🎲 UUID Generator</h2>
+<button onclick="generateUUID()">Generate UUID</button>
+<pre id="uuidResult"></pre>
+</section>
+
+<!-- JWT -->
+<section id="jwt">
+<h2>🛡️ JWT Decoder</h2>
+<input type="text" id="jwtInput" placeholder="Paste JWT here">
+<button onclick="decodeJWT()">Decode JWT</button>
+<pre id="jwtResult"></pre>
+</section>
+
+<!-- Crontab -->
+<section id="crontab">
+<h2>⏰ Crontab Validator</h2>
+<input type="text" id="cronInput" placeholder="Enter cron expression">
+<button onclick="validateCron()">Validate</button>
+<pre id="cronResult"></pre>
+</section>
+
+<!-- Color Picker -->
+<section id="color">
+<h2>🎨 Color Picker</h2>
+<input type="color" id="colorInput" value="#ff00ff" onchange="showColor()">
+<pre id="colorResult"></pre>
+</section>
+
+<!-- Timestamp -->
+<section id="timestamp">
+<h2>🕒 Timestamp Converter</h2>
+<input type="text" id="timestampInput" placeholder="Enter timestamp or date string">
+<button onclick="convertTimestamp()">Convert</button>
+<pre id="timestampResult"></pre>
+</section>
+
+<!-- Code2Image -->
+<section id="code2img">
+<h2>💻 Code to Image</h2>
+<textarea id="codeInput" placeholder="Paste your code here" rows="5"></textarea>
+<button onclick="codeToImage()">Generate Image</button>
+<canvas id="codeCanvas"></canvas>
+</section>
+
+</main>
+
+<footer>
+<p>© 2025 MindStash | Rare Files & Digital Chaos</p>
+</footer>
+
+<script>
+tsParticles.load("tsparticles", {
+  fpsLimit: 60,
+  background: { color: "#0f0f1a" },
+  particles: {
+    number: { value: 80, density: { enable: true, area: 800 } },
+    color: { value: ["#00f0ff","#ff00ff","#ff6a00"] },
+    shape: { type: "circle" },
+    opacity: { value: 0.5, random: true },
+    size: { value: 2, random: true },
+    move: { enable: true, speed: 1, outModes: "bounce" },
+    links: { enable: true, distance: 150, color: "#00f0ff", opacity: 0.3, width: 1 }
+  },
+  interactivity: { events: { onHover: { enable: true, mode: "repulse" } }, modes: { repulse: { distance: 100, duration: 0.4 } } },
+  detectRetina: true
+});
+
+// 工具函数
+function parseJSON(){try{const val=JSON.parse(document.getElementById('jsonInput').value);document.getElementById('jsonResult').textContent=JSON.stringify(val,null,2);}catch(e){document.getElementById('jsonResult').textContent='Invalid JSON';}}
+function encodeBase64(){document.getElementById('base64Result').textContent=btoa(document.getElementById('base64Input').value);}
+function decodeBase64(){try{document.getElementById('base64Result').textContent=atob(document.getElementById('base64Input').value);}catch(e){document.getElementById('base64Result').textContent='Invalid Base64';}}
+function generateMD5(){document.getElementById('md5Result').textContent=md5(document.getElementById('md5Input').value);}
+function encodeURL(){document.getElementById('urlResult').textContent=encodeURIComponent(document.getElementById('urlInput').value);}
+function decodeURL(){document.getElementById('urlResult').textContent=decodeURIComponent(document.getElementById('urlInput').value);}
+function generateUUID(){document.getElementById('uuidResult').textContent=uuid.v4();}
+function decodeJWT(){try{const parts=document.getElementById('jwtInput').value.split('.'); if(parts.length!==3)throw'Invalid JWT';const payload=JSON.parse(atob(parts[1])); document.getElementById('jwtResult').textContent=JSON.stringify(payload,null,2);}catch(e){document.getElementById('jwtResult').textContent='Invalid JWT';}}
+function validateCron(){const val=document.getElementById('cronInput').value.split(' '); document.getElementById('cronResult').textContent=(val.length===5)?'Valid cron':'Invalid cron';}
+function showColor(){const c=document.getElementById('colorInput').value; document.getElementById('colorResult').textContent=`Hex: ${c}\nRGB: ${parseInt(c.substr(1,2),16)},${parseInt(c.substr(3,2),16)},${parseInt(c.substr(5,2),16)}`;}
+function convertTimestamp(){const val=document.getElementById('timestampInput').value; const n=Number(val); const d=isNaN(n)?new Date(val):new Date(n*1000); document.getElementById('timestampResult').textContent=d.toString();}
+function codeToImage(){const canvas=document.getElementById('codeCanvas'); const ctx=canvas.getContext('2d'); const code=document.getElementById('codeInput').value; const lines=code.split('\n'); canvas.width=800; canvas.height=lines.length*20+20; ctx.fillStyle='#0f0f1a'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#00ffff'; ctx.font='16px monospace'; lines.forEach((l,i)=>ctx.fillText(l,10,20*(i+1)));}
+function compressImages(){const files=document.getElementById('imageInput').files; const result=document.getElementById('imageResult'); result.innerHTML=''; for(let f of files){const reader=new FileReader(); reader.onload=e=>{const img=document.createElement('img'); img.src=e.target.result; img.style.maxWidth='200px'; img.style.margin='5px'; result.appendChild(img);}; reader.readAsDataURL(f);}}
+</script>
+
+<!-- 悬浮返回主页按钮 -->
+<a href="index.html" class="floating-home-btn" title="Return to MindStash Homepage">🏠 Home</a>
+
+<style>
+.floating-home-btn {
+    position: fixed;      /* 固定在屏幕位置 */
+    top: 20px;            /* 距离顶部20px */
+    right: 20px;          /* 距离右边20px */
+    z-index: 9999;        /* 保证在最上层 */
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff !important;
+    background: linear-gradient(90deg,#ff6a00,#ee0979);
+    box-shadow:0 0 15px rgba(255,106,0,0.7);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.floating-home-btn:hover {
+    background: linear-gradient(90deg,#ee0979,#ff6a00);
+    box-shadow: 0 0 30px rgba(255,0,255,1),0 0 50px rgba(0,255,255,0.8);
+    transform: scale(1.1);
+}
+.floating-home-btn:active {
+    transform: scale(1.05);
+    box-shadow: 0 0 50px rgba(255,255,255,0.9),0 0 100px rgba(255,0,255,0.8);
+}
+</style>
+
+
+</body>
+</html>
