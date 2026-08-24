@@ -37,15 +37,12 @@ jobs:
           # Keep the requested standalone package ID.
           grep -RIlZ 'com\.mfga\.xposed' upstream/mfga-xposed/app | xargs -0 -r sed -i 's/com\.mfga\.xposed/billionaire.xinye.xposed/g'
 
-          # Restore the exact V1.3 FontHub icon composition and generate density variants.
+          # Restore the exact V1.3 FontHub icon composition. Android scales it per density bucket.
           base64 -d fonthub-v4/icon192.b64 > /tmp/fonthub192.png
-          command -v convert >/dev/null
-          for spec in 'mdpi 48' 'hdpi 72' 'xhdpi 96' 'xxhdpi 144' 'xxxhdpi 192'; do
-            set -- $spec
-            d=$1; s=$2
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             mkdir -p upstream/mfga-xposed/app/src/main/res/mipmap-$d
-            convert /tmp/fonthub192.png -resize ${s}x${s} upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher.png
-            cp upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher.png upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher_round.png
+            cp /tmp/fonthub192.png upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher.png
+            cp /tmp/fonthub192.png upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher_round.png
           done
 
           ! grep -RIl 'com\.mfga\.xposed' upstream/mfga-xposed/app
