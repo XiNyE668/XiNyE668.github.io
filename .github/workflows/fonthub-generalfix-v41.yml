@@ -34,6 +34,9 @@ jobs:
           unzip -qo /tmp/overlay.zip -d /tmp/overlay
           cp -a /tmp/overlay/app/. upstream/mfga-xposed/app/
 
+          # The upstream manifest references @string/module_name.
+          sed -i 's/name="app_name"/name="module_name"/' upstream/mfga-xposed/app/src/main/res/values/strings.xml
+
           # Requested standalone package id; behavior remains based on upstream MFGA.
           grep -RIlZ 'com\.mfga\.xposed' upstream/mfga-xposed/app | xargs -0 -r sed -i 's/com\.mfga\.xposed/billionaire.xinye.xposed/g'
 
@@ -47,6 +50,7 @@ jobs:
 
           ! grep -RIl 'com\.mfga\.xposed' upstream/mfga-xposed/app
           grep -n 'applicationId = "billionaire.xinye.xposed"' upstream/mfga-xposed/app/build.gradle.kts
+          grep -n 'name="module_name"' upstream/mfga-xposed/app/src/main/res/values/strings.xml
           cat upstream/mfga-xposed/app/src/main/resources/META-INF/xposed/scope.list
 
       - name: Build release APK
