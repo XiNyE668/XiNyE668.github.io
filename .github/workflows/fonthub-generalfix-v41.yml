@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 https://github.com/Numbersf/MakeFontsGreatAgain.git upstream
-          base64 -d fonthub-generalfix-v41/overlay.b64 > /tmp/overlay.zip
+          cat fonthub-generalfix-v41/parts/overlay.* | base64 -d > /tmp/overlay.zip
           echo 'e0d9dda944467304fe58ec75f0fa99dfb270558b8c753601e7b077f48ffda0ec  /tmp/overlay.zip' | sha256sum -c -
           unzip -t /tmp/overlay.zip
           unzip -qo /tmp/overlay.zip -d /tmp/overlay
