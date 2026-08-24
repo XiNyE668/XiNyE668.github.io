@@ -48,6 +48,16 @@ jobs:
                         '        log(Log.INFO, TAG, "FontHub general+compat attach: ${param.packageName}")')
           s = s.replace('        val cl = param.classLoader\n        val special = FontCompatPolicy.isSpecial(packageName)',
                         '        val cl = param.classLoader\n        val packageName = param.packageName\n        val special = FontCompatPolicy.isSpecial(packageName)\n        log(Log.INFO, TAG, "FontHub compat ready: $packageName special=$special")')
+          s = s.replace('        hookStaticFactory(cl, "createFromAsset", special)',
+                        '        hookStaticFactory(cl, "createFromAsset", special, packageName)')
+          s = s.replace('        hookStaticFactory(cl, "createFromFile", special)',
+                        '        hookStaticFactory(cl, "createFromFile", special, packageName)')
+          s = s.replace('        if (special) hookResourcesGetFont()',
+                        '        if (special) hookResourcesGetFont(packageName)')
+          s = s.replace('    private fun hookResourcesGetFont() {',
+                        '    private fun hookResourcesGetFont(packageName: String) {')
+          s = s.replace('    private fun hookStaticFactory(cl: ClassLoader, methodName: String, special: Boolean) {',
+                        '    private fun hookStaticFactory(cl: ClassLoader, methodName: String, special: Boolean, packageName: String) {')
           p.write_text(s)
           PY
 
@@ -70,6 +80,8 @@ jobs:
           grep -n 'versionCode = 42' upstream/mfga-xposed/app/build.gradle.kts
           grep -n 'versionName = "4.2"' upstream/mfga-xposed/app/build.gradle.kts
           grep -n 'val packageName = param.packageName' upstream/mfga-xposed/app/src/main/java/com/mfga/xposed/modern/ModernEntry.kt
+          grep -n 'hookResourcesGetFont(packageName)' upstream/mfga-xposed/app/src/main/java/com/mfga/xposed/modern/ModernEntry.kt
+          grep -n 'special, packageName' upstream/mfga-xposed/app/src/main/java/com/mfga/xposed/modern/ModernEntry.kt
           ! grep -n 'private var packageName' upstream/mfga-xposed/app/src/main/java/com/mfga/xposed/modern/ModernEntry.kt
           cat upstream/mfga-xposed/app/src/main/resources/META-INF/xposed/scope.list
 
