@@ -26,8 +26,11 @@ jobs:
 
       - name: Prepare upstream source
         run: |
+          set -euo pipefail
           git clone --depth 1 https://github.com/Numbersf/MakeFontsGreatAgain.git upstream
-          base64 -d fonthub-v3/patch.zip.b64 > /tmp/fonthub-v3-patch.zip
+          cat fonthub-v3/parts/patch.* | base64 -d > /tmp/fonthub-v3-patch.zip
+          echo '0a8d7ebe96e2db808e5c9522b58daa7c0185e4998bb71d3d3883c06b9145976e  /tmp/fonthub-v3-patch.zip' | sha256sum -c -
+          unzip -t /tmp/fonthub-v3-patch.zip
           unzip -qo /tmp/fonthub-v3-patch.zip -d /tmp/fonthub-v3-patch
           cp -a /tmp/fonthub-v3-patch/app/. upstream/mfga-xposed/app/
           mkdir -p upstream/mfga-xposed/app/src/main/res/drawable-nodpi
