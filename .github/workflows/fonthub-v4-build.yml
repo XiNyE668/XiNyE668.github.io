@@ -1,0 +1,82 @@
+name: FontHub V4 Targeted Font Fix
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'fonthub-v4/**'
+      - '.github/workflows/fonthub-v4-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Prepare targeted source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/Numbersf/MakeFontsGreatAgain.git upstream
+          base64 -d fonthub-v4/overlay.b64 > /tmp/fonthub-v4-overlay.zip
+          echo '1ed89f934b2a289017ed713a0f0fb992b49e0c26c262f629c01168fc156b7f40  /tmp/fonthub-v4-overlay.zip' | sha256sum -c -
+          unzip -t /tmp/fonthub-v4-overlay.zip
+          unzip -qo /tmp/fonthub-v4-overlay.zip -d /tmp/fonthub-v4-overlay
+          cp -a /tmp/fonthub-v4-overlay/app/. upstream/mfga-xposed/app/
+
+          # Keep the requested standalone package ID.
+          grep -RIlZ 'com\.mfga\.xposed' upstream/mfga-xposed/app | xargs -0 -r sed -i 's/com\.mfga\.xposed/billionaire.xinye.xposed/g'
+
+          # Restore the exact V1.3 FontHub icon composition and generate density variants.
+          base64 -d fonthub-v4/icon192.b64 > /tmp/fonthub192.png
+          command -v convert >/dev/null
+          for spec in 'mdpi 48' 'hdpi 72' 'xhdpi 96' 'xxhdpi 144' 'xxxhdpi 192'; do
+            set -- $spec
+            d=$1; s=$2
+            mkdir -p upstream/mfga-xposed/app/src/main/res/mipmap-$d
+            convert /tmp/fonthub192.png -resize ${s}x${s} upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher.png
+            cp upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher.png upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher_round.png
+          done
+
+          ! grep -RIl 'com\.mfga\.xposed' upstream/mfga-xposed/app
+          grep -n 'applicationId = "billionaire.xinye.xposed"' upstream/mfga-xposed/app/build.gradle.kts
+
+      - name: Build release APK
+        working-directory: upstream/mfga-xposed
+        run: gradle :app:assembleRelease --stacktrace --no-daemon
+
+      - name: Align, sign and verify
+        run: |
+          set -euo pipefail
+          UNSIGNED=$(find upstream/mfga-xposed/app/build/outputs/apk/release -name '*.apk' | head -1)
+          BT=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
+          "$ANDROID_HOME/build-tools/$BT/zipalign" -f -p 4 "$UNSIGNED" FontHub-V4-aligned.apk
+          curl -fsSL https://raw.githubusercontent.com/mfonville/pa_gapps/master/testkey.pk8 -o testkey.pk8
+          curl -fsSL https://raw.githubusercontent.com/mfonville/pa_gapps/master/testkey.x509.pem -o testkey.x509.pem
+          "$ANDROID_HOME/build-tools/$BT/apksigner" sign \
+            --key testkey.pk8 --cert testkey.x509.pem \
+            --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
+            --out FontHub-XPosed-V4-A16-TargetedFix.apk FontHub-V4-aligned.apk
+          "$ANDROID_HOME/build-tools/$BT/apksigner" verify --verbose --print-certs FontHub-XPosed-V4-A16-TargetedFix.apk
+          "$ANDROID_HOME/build-tools/$BT/aapt" dump badging FontHub-XPosed-V4-A16-TargetedFix.apk | grep "package: name='billionaire.xinye.xposed'"
+          "$ANDROID_HOME/build-tools/$BT/aapt" dump badging FontHub-XPosed-V4-A16-TargetedFix.apk | grep "versionName='4.0'"
+          unzip -t FontHub-XPosed-V4-A16-TargetedFix.apk
+          sha256sum FontHub-XPosed-V4-A16-TargetedFix.apk > FontHub-XPosed-V4-A16-TargetedFix.apk.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FontHub-XPosed-V4-A16-TargetedFix
+          path: |
+            FontHub-XPosed-V4-A16-TargetedFix.apk
+            FontHub-XPosed-V4-A16-TargetedFix.apk.sha256
+          if-no-files-found: error
