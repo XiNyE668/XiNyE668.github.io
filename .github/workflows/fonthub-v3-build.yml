@@ -1,0 +1,63 @@
+name: FontHub V3 Build
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'fonthub-v3/**'
+      - '.github/workflows/fonthub-v3-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Prepare upstream source
+        run: |
+          git clone --depth 1 https://github.com/Numbersf/MakeFontsGreatAgain.git upstream
+          base64 -d fonthub-v3/patch.zip.b64 > /tmp/fonthub-v3-patch.zip
+          unzip -qo /tmp/fonthub-v3-patch.zip -d /tmp/fonthub-v3-patch
+          cp -a /tmp/fonthub-v3-patch/app/. upstream/mfga-xposed/app/
+          mkdir -p upstream/mfga-xposed/app/src/main/res/drawable-nodpi
+          base64 -d fonthub-v3/icon.b64 > upstream/mfga-xposed/app/src/main/res/drawable-nodpi/fonthub_icon.png
+
+      - name: Build release APK
+        working-directory: upstream/mfga-xposed
+        run: gradle :app:assembleRelease --stacktrace --no-daemon
+
+      - name: Align and sign with original AOSP testkey
+        run: |
+          set -euo pipefail
+          UNSIGNED=$(find upstream/mfga-xposed/app/build/outputs/apk/release -name '*.apk' | head -1)
+          test -n "$UNSIGNED"
+          BT=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
+          "$ANDROID_HOME/build-tools/$BT/zipalign" -f -p 4 "$UNSIGNED" FontHub-V3-aligned.apk
+          curl -fsSL https://raw.githubusercontent.com/mfonville/pa_gapps/master/testkey.pk8 -o testkey.pk8
+          curl -fsSL https://raw.githubusercontent.com/mfonville/pa_gapps/master/testkey.x509.pem -o testkey.x509.pem
+          "$ANDROID_HOME/build-tools/$BT/apksigner" sign \
+            --key testkey.pk8 --cert testkey.x509.pem \
+            --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
+            --out FontHub-XPosed-V3-A16.apk FontHub-V3-aligned.apk
+          "$ANDROID_HOME/build-tools/$BT/apksigner" verify --verbose --print-certs FontHub-XPosed-V3-A16.apk
+          "$ANDROID_HOME/build-tools/$BT/aapt" dump badging FontHub-XPosed-V3-A16.apk | head -8 || true
+          sha256sum FontHub-XPosed-V3-A16.apk > FontHub-XPosed-V3-A16.apk.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FontHub-XPosed-V3-A16
+          path: |
+            FontHub-XPosed-V3-A16.apk
+            FontHub-XPosed-V3-A16.apk.sha256
+          if-no-files-found: error
