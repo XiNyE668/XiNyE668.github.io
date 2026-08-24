@@ -37,14 +37,13 @@ jobs:
           # Requested standalone package id; behavior remains based on upstream MFGA.
           grep -RIlZ 'com\.mfga\.xposed' upstream/mfga-xposed/app | xargs -0 -r sed -i 's/com\.mfga\.xposed/billionaire.xinye.xposed/g'
 
-          # Exact FontHub 1.3 icon composition.
+          # Use the exact FontHub 1.3 icon composition. Remove upstream density variants
+          # so Android resolves this single exact xxxhdpi source and scales it as needed.
           base64 -d fonthub-generalfix-v41/icon192.b64 > /tmp/fonthub192.png
-          for spec in 'mdpi 48' 'hdpi 72' 'xhdpi 96' 'xxhdpi 144' 'xxxhdpi 192'; do
-            set -- $spec; d=$1; s=$2
-            mkdir -p upstream/mfga-xposed/app/src/main/res/mipmap-$d
-            convert /tmp/fonthub192.png -resize ${s}x${s} upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher.png
-            cp upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher.png upstream/mfga-xposed/app/src/main/res/mipmap-$d/ic_launcher_round.png
-          done
+          find upstream/mfga-xposed/app/src/main/res -type f \( -name 'ic_launcher.png' -o -name 'ic_launcher_round.png' \) -delete
+          mkdir -p upstream/mfga-xposed/app/src/main/res/mipmap-xxxhdpi
+          cp /tmp/fonthub192.png upstream/mfga-xposed/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          cp /tmp/fonthub192.png upstream/mfga-xposed/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
           ! grep -RIl 'com\.mfga\.xposed' upstream/mfga-xposed/app
           grep -n 'applicationId = "billionaire.xinye.xposed"' upstream/mfga-xposed/app/build.gradle.kts
