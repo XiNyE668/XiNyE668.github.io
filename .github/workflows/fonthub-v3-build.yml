@@ -33,14 +33,24 @@ jobs:
           unzip -t /tmp/fonthub-v3-patch.zip
           unzip -qo /tmp/fonthub-v3-patch.zip -d /tmp/fonthub-v3-patch
           cp -a /tmp/fonthub-v3-patch/app/. upstream/mfga-xposed/app/
+
+          # Full package/namespace rename for V3. This is intentionally a new LSPosed module ID.
+          grep -RIlZ 'com\.mfga\.xposed' upstream/mfga-xposed/app | \
+            xargs -0 -r sed -i 's/com\.mfga\.xposed/billionaire.xinye.xposed/g'
+
           mkdir -p upstream/mfga-xposed/app/src/main/res/drawable-nodpi
           base64 -d fonthub-v3/icon.b64 > upstream/mfga-xposed/app/src/main/res/drawable-nodpi/fonthub_icon.png
+
+          # Verify no old package identifier remains in executable/module metadata.
+          ! grep -RIl 'com\.mfga\.xposed' upstream/mfga-xposed/app
+          grep -n 'applicationId = "billionaire.xinye.xposed"' upstream/mfga-xposed/app/build.gradle.kts
+          grep -RIn 'billionaire\.xinye\.xposed' upstream/mfga-xposed/app/src/main/resources upstream/mfga-xposed/app/src/main/assets upstream/mfga-xposed/app/src/main/java | head -20
 
       - name: Build release APK
         working-directory: upstream/mfga-xposed
         run: gradle :app:assembleRelease --stacktrace --no-daemon
 
-      - name: Align and sign with original AOSP testkey
+      - name: Align and sign APK
         run: |
           set -euo pipefail
           UNSIGNED=$(find upstream/mfga-xposed/app/build/outputs/apk/release -name '*.apk' | head -1)
@@ -55,6 +65,7 @@ jobs:
             --out FontHub-XPosed-V3-A16.apk FontHub-V3-aligned.apk
           "$ANDROID_HOME/build-tools/$BT/apksigner" verify --verbose --print-certs FontHub-XPosed-V3-A16.apk
           "$ANDROID_HOME/build-tools/$BT/aapt" dump badging FontHub-XPosed-V3-A16.apk | head -8 || true
+          "$ANDROID_HOME/build-tools/$BT/aapt" dump badging FontHub-XPosed-V3-A16.apk | grep "package: name='billionaire.xinye.xposed'"
           sha256sum FontHub-XPosed-V3-A16.apk > FontHub-XPosed-V3-A16.apk.sha256
 
       - uses: actions/upload-artifact@v4
