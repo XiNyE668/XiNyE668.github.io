@@ -34,6 +34,10 @@ jobs:
           unzip -qo /tmp/fonthub-v4-patch.zip -d /tmp/fonthub-v4-patch
           cp -a /tmp/fonthub-v4-patch/app/. upstream/mfga-xposed/app/
 
+          # Small compile-only correction: V4 FontInfo exposes enum kind, not the old boolean iconFont.
+          sed -i 's/FontInspector.inspect(ByteBuffer.wrap(data))\.iconFont/FontInspector.inspect(ByteBuffer.wrap(data)).kind == FontInspector.Kind.ICON/' \
+            upstream/mfga-xposed/app/src/main/java/com/mfga/xposed/scanner/FontScanner.java
+
           grep -RIlZ 'com\.mfga\.xposed' upstream/mfga-xposed/app | \
             xargs -0 -r sed -i 's/com\.mfga\.xposed/billionaire.xinye.xposed/g'
 
