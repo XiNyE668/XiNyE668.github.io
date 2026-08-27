@@ -32,61 +32,62 @@ jobs:
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "71b13e62f057a649b77fe4062feb73ee72ad609c"
           git apply "$GITHUB_WORKSPACE/build/lmipro-v5/camera-v4.patch"
-          grep -q 'default_compressor = "lzo"' drivers/block/zram/zram_drv.c
           sed -i 's/static const char \*default_compressor = "lzo";/static const char *default_compressor = "zstd";/' drivers/block/zram/zram_drv.c
-          grep -n 'default_compressor' drivers/block/zram/zram_drv.c | head
 
-      - name: Fetch exact official KernelSU Next legacy
+      - name: Fetch exact official root sources
         run: |
           set -euxo pipefail
           cd kernel
           git clone --filter=blob:none https://github.com/KernelSU-Next/KernelSU-Next.git KernelSU-Next
-          cd KernelSU-Next
-          git fetch --depth=1 origin a54e4fa46c6cc25bcaa055cf14d790194beffed8
-          git checkout --detach a54e4fa46c6cc25bcaa055cf14d790194beffed8
-          test "$(git rev-parse HEAD)" = "a54e4fa46c6cc25bcaa055cf14d790194beffed8"
-          cd ..
+          git -C KernelSU-Next fetch --depth=1 origin a54e4fa46c6cc25bcaa055cf14d790194beffed8
+          git -C KernelSU-Next checkout --detach a54e4fa46c6cc25bcaa055cf14d790194beffed8
+          test "$(git -C KernelSU-Next rev-parse HEAD)" = "a54e4fa46c6cc25bcaa055cf14d790194beffed8"
+
+          git clone --filter=blob:none --branch kernel-4.19 https://gitlab.com/simonpunk/susfs4ksu.git susfs-official
+          git -C susfs-official fetch --depth=1 origin 001e69919c6271f690fd00b17e4c721c9e599152
+          git -C susfs-official checkout --detach 001e69919c6271f690fd00b17e4c721c9e599152
+          test "$(git -C susfs-official rev-parse HEAD)" = "001e69919c6271f690fd00b17e4c721c9e599152"
+
           ln -s ../KernelSU-Next/kernel drivers/kernelsu
           printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> drivers/Makefile
           sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
-
-      - name: Fetch exact official SUSFS 4.19 and probe patches
-        run: |
-          set -uxo pipefail
-          cd kernel
-          git clone --filter=blob:none --branch kernel-4.19 https://gitlab.com/simonpunk/susfs4ksu.git susfs-official
-          cd susfs-official
-          git fetch --depth=1 origin 001e69919c6271f690fd00b17e4c721c9e599152
-          git checkout --detach 001e69919c6271f690fd00b17e4c721c9e599152
-          echo "SUSFS_HEAD=$(git rev-parse HEAD)" | tee "$GITHUB_WORKSPACE/susfs-head.txt"
-          cd ..
-
           cp susfs-official/kernel_patches/fs/* fs/
           cp susfs-official/kernel_patches/include/linux/* include/linux/
 
+      - name: Apply official patches with rejects and capture exact conflicts
+        run: |
+          set -uxo pipefail
+          cd kernel
+          mkdir -p "$GITHUB_WORKSPACE/diag/official" "$GITHUB_WORKSPACE/diag/kernel-current" "$GITHUB_WORKSPACE/diag/ksu-current"
+          cp susfs-official/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch "$GITHUB_WORKSPACE/diag/official/"
+          cp susfs-official/kernel_patches/50_add_susfs_in_kernel-4.19.patch "$GITHUB_WORKSPACE/diag/official/"
+          cp susfs-official/kernel_patches/fs/susfs.c susfs-official/kernel_patches/fs/sus_su.c "$GITHUB_WORKSPACE/diag/official/"
+          cp susfs-official/kernel_patches/include/linux/susfs.h susfs-official/kernel_patches/include/linux/susfs_def.h susfs-official/kernel_patches/include/linux/sus_su.h "$GITHUB_WORKSPACE/diag/official/"
+
+          cp fs/namespace.c fs/proc/task_mmu.c include/linux/mount.h "$GITHUB_WORKSPACE/diag/kernel-current/"
+          cp -a KernelSU-Next/kernel/Kconfig KernelSU-Next/kernel/Makefile KernelSU-Next/kernel/Kbuild \
+            KernelSU-Next/kernel/compat KernelSU-Next/kernel/core KernelSU-Next/kernel/feature \
+            KernelSU-Next/kernel/hook KernelSU-Next/kernel/manager KernelSU-Next/kernel/policy \
+            KernelSU-Next/kernel/runtime KernelSU-Next/kernel/selinux KernelSU-Next/kernel/include \
+            "$GITHUB_WORKSPACE/diag/ksu-current/"
+
           set +e
-          cd KernelSU-Next
-          patch -p1 --dry-run < ../susfs-official/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch > "$GITHUB_WORKSPACE/ksu-susfs-dryrun.log" 2>&1
-          echo $? > "$GITHUB_WORKSPACE/ksu-susfs-dryrun.status"
-          cd ..
-          patch -p1 --dry-run < susfs-official/kernel_patches/50_add_susfs_in_kernel-4.19.patch > "$GITHUB_WORKSPACE/kernel-susfs-dryrun.log" 2>&1
-          echo $? > "$GITHUB_WORKSPACE/kernel-susfs-dryrun.status"
+          patch -p1 --batch < susfs-official/kernel_patches/50_add_susfs_in_kernel-4.19.patch > "$GITHUB_WORKSPACE/diag/kernel-apply.log" 2>&1
+          echo $? > "$GITHUB_WORKSPACE/diag/kernel-apply.status"
+          (cd KernelSU-Next && patch -p1 --batch < ../susfs-official/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch > "$GITHUB_WORKSPACE/diag/ksu-apply.log" 2>&1)
+          echo $? > "$GITHUB_WORKSPACE/diag/ksu-apply.status"
           set -e
 
-          echo '=== KernelSU patch status ==='
-          cat "$GITHUB_WORKSPACE/ksu-susfs-dryrun.status"
-          cat "$GITHUB_WORKSPACE/ksu-susfs-dryrun.log"
-          echo '=== kernel 4.19 patch status ==='
-          cat "$GITHUB_WORKSPACE/kernel-susfs-dryrun.status"
-          cat "$GITHUB_WORKSPACE/kernel-susfs-dryrun.log"
+          find . -name '*.rej' -print -exec cp --parents '{}' "$GITHUB_WORKSPACE/diag/" \;
+          cp fs/namespace.c fs/proc/task_mmu.c include/linux/mount.h "$GITHUB_WORKSPACE/diag/kernel-after/" 2>/dev/null || true
 
-      - name: Upload integration diagnostics
+          echo '=== kernel patch ==='; cat "$GITHUB_WORKSPACE/diag/kernel-apply.status"; cat "$GITHUB_WORKSPACE/diag/kernel-apply.log"
+          echo '=== KSU patch ==='; cat "$GITHUB_WORKSPACE/diag/ksu-apply.status"; cat "$GITHUB_WORKSPACE/diag/ksu-apply.log"
+
+      - name: Upload adaptation inputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lmipro-v5-integration-probe
-          path: |
-            *dryrun*.log
-            *dryrun*.status
-            susfs-head.txt
-          if-no-files-found: warn
+          name: lmipro-v5-adaptation-inputs
+          path: diag/
+          if-no-files-found: error
