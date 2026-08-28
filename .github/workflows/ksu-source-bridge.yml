@@ -6,16 +6,24 @@ jobs:
   pack:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch pinned KernelSU Next legacy
+      - name: Fetch SUSFS integration donors
         run: |
-          git clone --filter=blob:none https://github.com/KernelSU-Next/KernelSU-Next.git ksu
-          cd ksu
-          git checkout a54e4fa46c6cc25bcaa055cf14d790194beffed8
+          git clone https://github.com/ShirkNeko/SUSFS4KSU.git susfs
+          cd susfs
+          git checkout 1f764cfb8ddc3b19d7624731051d1000d629175b
           cd ..
-          tar --exclude='ksu/.git' -czf KernelSU-Next-legacy-a54e4fa.tar.gz ksu/kernel ksu/uapi
-      - name: Upload pinned source
+          git clone https://github.com/KernelSU-Next/KernelSU-Next.git ksu-upstream
+          cd ksu-upstream
+          git checkout v3.1.0-legacy-susfs
+          cd ..
+          git clone https://github.com/DXRN-MoonWake/KernelSU-Next.git ksu-dxrn
+          cd ksu-dxrn
+          git checkout 7200f73a7b4d0777217ead34fe9322978840df88
+          cd ..
+          tar --exclude='*/.git' -czf SUSFS-integration-donors.tar.gz susfs/kernel_patches ksu-upstream/kernel ksu-upstream/uapi ksu-dxrn/kernel ksu-dxrn/uapi
+      - name: Upload donors
         uses: actions/upload-artifact@v4
         with:
-          name: KernelSU-Next-legacy-a54e4fa
-          path: KernelSU-Next-legacy-a54e4fa.tar.gz
+          name: SUSFS-integration-donors
+          path: SUSFS-integration-donors.tar.gz
           if-no-files-found: error
