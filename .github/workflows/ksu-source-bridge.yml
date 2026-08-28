@@ -6,16 +6,16 @@ jobs:
   pack:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch pinned SUSFS 4.19 backport
+      - name: Fetch SUSFS-ready KSU reference
         run: |
-          git clone https://github.com/ShirkNeko/SUSFS4KSU.git susfs
-          cd susfs
-          git checkout 1f764cfb8ddc3b19d7624731051d1000d629175b
+          git clone https://github.com/DXRN-MoonWake/KernelSU-Next.git ksu-ref
+          cd ksu-ref
+          git checkout 7200f73a7b4d0777217ead34fe9322978840df88
           cd ..
-          tar --exclude='susfs/.git' -czf SUSFS4KSU-4.19-v1.5.9.tar.gz susfs/kernel_patches
-      - name: Upload SUSFS source and patches
+          tar --exclude='ksu-ref/.git' -czf KSU-SUSFS-ref-7200f73.tar.gz ksu-ref/kernel
+      - name: Upload KSU reference
         uses: actions/upload-artifact@v4
         with:
-          name: SUSFS4KSU-4.19-v1.5.9
-          path: SUSFS4KSU-4.19-v1.5.9.tar.gz
+          name: KSU-SUSFS-ref-7200f73
+          path: KSU-SUSFS-ref-7200f73.tar.gz
           if-no-files-found: error
