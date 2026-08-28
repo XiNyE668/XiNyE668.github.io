@@ -12,7 +12,7 @@ jobs:
           cd susfs
           git checkout 1f764cfb8ddc3b19d7624731051d1000d629175b
           cd ..
-          tar --exclude='susfs/.git' -czf SUSFS4KSU-4.19-v1.5.9.tar.gz susfs/kernel_patches susfs/module.prop
+          tar --exclude='susfs/.git' -czf SUSFS4KSU-4.19-v1.5.9.tar.gz susfs/kernel_patches
       - name: Upload SUSFS source and patches
         uses: actions/upload-artifact@v4
         with:
