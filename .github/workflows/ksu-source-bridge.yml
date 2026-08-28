@@ -6,24 +6,16 @@ jobs:
   pack:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch SUSFS integration donors
+      - name: Fetch pinned SUSFS 4.19 backport
         run: |
           git clone https://github.com/ShirkNeko/SUSFS4KSU.git susfs
           cd susfs
           git checkout 1f764cfb8ddc3b19d7624731051d1000d629175b
           cd ..
-          git clone https://github.com/KernelSU-Next/KernelSU-Next.git ksu-upstream
-          cd ksu-upstream
-          git checkout v3.1.0-legacy-susfs
-          cd ..
-          git clone https://github.com/DXRN-MoonWake/KernelSU-Next.git ksu-dxrn
-          cd ksu-dxrn
-          git checkout 7200f73a7b4d0777217ead34fe9322978840df88
-          cd ..
-          tar --exclude='*/.git' -czf SUSFS-integration-donors.tar.gz susfs/kernel_patches ksu-upstream/kernel ksu-upstream/uapi ksu-dxrn/kernel ksu-dxrn/uapi
-      - name: Upload donors
+          tar --exclude='susfs/.git' -czf SUSFS4KSU-4.19-v1.5.9.tar.gz susfs/kernel_patches susfs/module.prop
+      - name: Upload SUSFS source and patches
         uses: actions/upload-artifact@v4
         with:
-          name: SUSFS-integration-donors
-          path: SUSFS-integration-donors.tar.gz
+          name: SUSFS4KSU-4.19-v1.5.9
+          path: SUSFS4KSU-4.19-v1.5.9.tar.gz
           if-no-files-found: error
